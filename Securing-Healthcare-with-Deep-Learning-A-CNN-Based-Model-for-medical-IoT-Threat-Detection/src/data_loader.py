@@ -5,7 +5,7 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 
 def load_and_preprocess_data(data_dir, test_size=0.2):
-    """Load, preprocess, and prepare data for training."""
+    """Charge et prépare les données."""
     file_path = os.path.join(data_dir, 'Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv')
     
     if not os.path.exists(file_path):
@@ -14,23 +14,22 @@ def load_and_preprocess_data(data_dir, test_size=0.2):
     # Chargement du dataset
     df = pd.read_csv(file_path)
     
-    # Nettoyage des noms de colonnes (suppression des espaces)
+    # Nettoyage des noms de colonnes
     df.columns = df.columns.str.strip()
     
     # Remplacement des valeurs infinies et NaN
-    df.replace([float('inf'), float('-inf')], float('nan'), inplace=True)  # Convertit les infs en NaN
-    df.dropna(inplace=True)  # Supprime les lignes contenant des NaN
-    
-    # Vérification si 'Label' est bien présent
+    df.replace([float('inf'), float('-inf')], float('nan'), inplace=True)
+    df.dropna(inplace=True)
+
+    # Vérification de la colonne 'Label'
     if 'Label' not in df.columns:
-        print("Colonnes disponibles :", df.columns)
-        raise ValueError("Le dataset ne contient pas de colonne 'Label' après nettoyage. Vérifiez le format du fichier CSV.")
+        raise ValueError("Le dataset ne contient pas de colonne 'Label'. Vérifiez le fichier CSV.")
     
     # Séparation des caractéristiques et des labels
     X = df.drop(columns=['Label'])
     y = df['Label']
     
-    # Encodage des labels (0 pour Benign, 1 pour DDoS)
+    # Encodage des labels
     label_encoder = LabelEncoder()
     y_encoded = label_encoder.fit_transform(y)
     y_categorical = to_categorical(y_encoded)
@@ -43,7 +42,7 @@ def load_and_preprocess_data(data_dir, test_size=0.2):
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
     
-    # Reshape pour CNN (Conv1D nécessite un format spécifique)
+    # Reshape pour CNN + LSTM (timesteps, features)
     X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
     X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], 1)
     
